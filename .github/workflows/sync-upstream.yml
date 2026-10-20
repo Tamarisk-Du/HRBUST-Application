@@ -1,0 +1,29 @@
+name: Sync upstream
+
+on:
+  schedule:
+    # 04:17 UTC = 12:17 Asia/Shanghai.
+    - cron: '17 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-upstream-main
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.repository == 'Tamarisk-Du/HRBUST-Application'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Merge upstream main into fork main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # GitHub's merge-upstream endpoint preserves fork commits and fails on conflicts.
+        run: |
+          gh api --method POST \
+            "repos/${GITHUB_REPOSITORY}/merge-upstream" \
+            -f branch=main
